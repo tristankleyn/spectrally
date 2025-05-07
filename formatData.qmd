@@ -1,0 +1,65 @@
+---
+title: "formatGCMSSpectralData"
+format: html
+editor: visual
+---
+
+## Convert GC Mass Spec output into a standardized table format.
+
+Load helper functions from functions script.
+
+```{r}
+source('formatData_functions.R')
+```
+
+Read in data, provide necessary info:
+
+-   **filename** \~ name of CSV file containing raw data.
+
+-   **varList** \~ list of all variables in raw data file in correct order.
+
+-   **varX** \~ independent variable to analyse (e.g. retention time)
+
+-   **varY** \~ response variable to analyse (e.g. area-under-peak, abundance, intensity)
+
+-   **sampleIDloc** \~ position of sample label/ID relative to left-most value in first row of each sample
+
+-   **minBufferRows** \~ minimum number of rows separating last row of one sample and first sample of the next.
+
+-   **rtStart** \~ minimum retention time to include in spectra.
+
+-   **rtEnd** \~ maximum retention time to include in spectra.
+
+-   **rtStep** \~ spectral resolution (span of retention time window for summing y-values)
+
+-   **sumNormalize** \~ normalize y-values by dividing by sample sum (TRUE or FALSE)
+
+```{r}
+filename <- 'rawData/GCMS_output.csv'
+varList <- c('PEAK', 'RET TIME', 'TYPE', 'WIDTH', 'AREA', 'START TIME', 'END TIME')
+varX <- 'RET TIME'
+varY <- 'AREA'
+sampleIDloc <- c(-2,0)
+minBufferRows <- 4
+rtStart <- 5
+rtEnd <- 55
+rtStep <- 0.05
+sumNormalize <- TRUE
+
+data <- read.csv(filename, fill=TRUE)
+
+```
+
+Format data into standard spectra table format.
+
+```{r}
+dataSpec <- formatIntoSpec(data=data, varList=varList, varX=varX, varY=varY, sampleIDloc=sampleIDloc, bufferRows=minBufferRows, rtStart=rtStart, rtEnd=rtEnd, rtStep=rtStep, sumNormalize=sumNormalize)
+```
+
+Export formatted data to .CSV format.
+
+```{r}
+exportToCSV_dt(dataSpec)
+```
+
+**All done!**
