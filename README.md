@@ -7,3 +7,4 @@ Spectrally is a repostitory containing code notebooks designed for facilitating 
   <img width="800" alt="image" src="https://github.com/user-attachments/assets/3ec22265-7bcf-4bee-a53d-bd1161b92d14" />
   <img width="800" alt="image" src="https://github.com/user-attachments/assets/3e437c48-babe-414b-9bf8-78b1e257ec59" />
 </div>
+
