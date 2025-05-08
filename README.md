@@ -9,4 +9,4 @@ Spectrally is a repostitory containing code notebooks designed for facilitating 
   <img width="800" alt="image" src="https://github.com/user-attachments/assets/3e437c48-babe-414b-9bf8-78b1e257ec59" />
 </div>
 
-{\color{red}Color \space your \space \color{green}.md \space file \space \color{blue}in \space Github}
+${\color{red}Color \space your \space \color{green}.md \space file \space \color{blue}in \space Github}$
