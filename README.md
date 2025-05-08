@@ -9,3 +9,10 @@ Spectrally is a repostitory containing code notebooks designed for facilitating 
   <img width="800" alt="image" src="https://github.com/user-attachments/assets/3e437c48-babe-414b-9bf8-78b1e257ec59" />
 </div>
 
+```diff
+- text in red
++ text in green
+! text in orange
+# text in gray
+@@ text in purple (and bold)@@
+```
