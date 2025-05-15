@@ -1,7 +1,5 @@
 ### Spectrally: A simple, intuitive workflow for spectral analysis
 
-##
-
 <div align="center">
   <img width="500" alt="image" src="https://github.com/user-attachments/assets/156b4746-59f5-476b-82e8-0b4000d8a737" />
   <img width="500" alt="image" src="https://github.com/user-attachments/assets/3ec22265-7bcf-4bee-a53d-bd1161b92d14" />
