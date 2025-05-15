@@ -8,16 +8,17 @@ editor: visual
 
 ### How to use me
 
-This is an interactive notebook where blocks of code run analyses but are adjustable. To make the analysis streamlined, much of these code blocks rely on functions that are loaded in the "Setting Up" section from a separate R script: **spectraFunctions.R**. You can refer to this script to understand the inner workings of the code but is suggested to not change anything there. Instead, look for places in this notebook where code is flexible, such as in the block of code below where flexible parameters are denoted with the comment "flex". Try running this code block by clicking the green triangle in the top right-hand corner:
+This is an interactive notebook where blocks of code run analyses but are adjustable. To make the analysis streamlined, much of these code blocks rely on functions that are loaded in the "Setting Up" section from a separate R script: **spectraFunctions.R**. You can refer to this script to understand the inner workings of the code but is suggested to not change anything there. Instead, look for this icon 🟢, which indicates an adjustable line of code. Try running this code block by clicking the green triangle in the top right-hand corner:
 
 ```{r}
-a <- 'There are'                          #FLEX
-b <- 0                                    #FLEX
-c <- 'grapes in antarctica'               #FLEX
+a <- 'There are' #🟢
+b <- 0 #🟢
+c <- 'grapes in antarctica' #🟢
+
 print(paste(a, b, c, sep=' '))
 ```
 
-If a line doesn't say **"FLEX"** next to it, don't change it unless you're sure you know what you're doing!
+If a line doesn't have 🟢 next to it, don't change it unless you're sure you know what you're doing!
 
 ## Setting up
 
@@ -65,9 +66,9 @@ tData <- info[[1]]
 If your data contains many samples, you may consider reudcing the size of your dataset to improve the efficiency of this analysis. Use the code below to downsample or compress your data. Downsampling involves sub-sampling your data randomly to reduce the number of samples to a fraction of the original dataset defined by **downsample_factor**, while compressing involves reducing the length of your spectra by taking a moving average of each, where **compress_factor** determines the number of values averaged in each non-overlapping step.
 
 ```{r}
-downsample_factor <- 1
-compress_factor <- 1
-vars <- c('species', 'enc_id')
+downsample_factor <- 1 #🟢
+compress_factor <- 3 #🟢
+vars <- c('filename') #🟢
 
 tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% compressData(k=compress_factor)
 ```
@@ -77,12 +78,17 @@ tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% c
 Use the code below to visualize your spectra by variable groupings of your choosing:
 
 ```{r}
-subsetVar <- c('species')
-subsetVarLevel <- 1
-selectVars <- c('temperature', 'source')                          #FLEX
+subsetVar <- 'filename' #🟢
+subsetVarLevel <- 1 #🟢
+selectVars <- c() #🟢
 
+xScale <- c(5,55) #🟢
+xLims <- c(5,30) #🟢
+XYlabs <- c('Retention time (min)', 'Relative abundance') #🟢
 
-overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar, subsetVarLevel=subsetVarLevel, xScale=c(5,55), xLims=c(5,30), XYlabs = c('Retention time (min)', 'Relative abundance'))
+overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
+               subsetVarLevel=subsetVarLevel, 
+               xScale = xScale, xLims = xLims,XYlabs = XYlabs)
 
 ```
 
@@ -91,9 +97,9 @@ overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar, subsetVarL
 Once you've correctly uploaded your data, we can now begin to analyse spectra. To start, enter two row numbers **n1** and **n2** into the code below to compare two individual spectra:
 
 ```{r}
-n1 <- sample(1:nrow(tData), 1)                                   #FLEX
-n2 <- sample(1:nrow(tData), 1)                                 #FLEX
-label_var <- 'species'                       #FLEX
+n1 <- sample(1:nrow(tData), 1) #🟢
+n2 <- sample(1:nrow(tData), 1) #🟢                 
+label_var <- 'filename' #🟢                 
 
 scores <- spectralDist(data=tData, n1=n1, n2=n2, labelVar=label_var, plotSpectra=TRUE, verbose=FALSE)
 
@@ -119,7 +125,11 @@ Using this distance metric, we can compute spectral distances between all pairs 
 **NOTE**: The amount of time required to compute the distance matrix increases exponentially with the number of spectra. If you have a large number of spectra, you may want to consider dividing your dataset into different sub-datasets before computing any distance matrices.
 
 ```{r}
-DM <- getDistMat(tData)
+fixed <- TRUE #🟢
+filters <- c() #🟢
+iterations <- c() #🟢
+
+DM <- getDistMat(tData, fixed=fixed, filters=filters, iters=iterations)
 
 mds_result <- cmdscale(DM, k = 2)
 mds_coords <- as.data.frame(mds_result)
@@ -130,15 +140,16 @@ for (var in VARIABLES) {
 }
 ```
 
-We can visualize the information in the distance matrix using the MDS coordinates:
+We can visualize similarity in spectra using the resulting MDS coordinates:
 
 ```{r}
-selectVars <- c('temperature','source', 'species')     #FLEX (max 3 variables)
-point_size <- 2                                         #FLEX
-transparency <- 0.7                                     #FLEX
+selectVars <- c('filename') #🟢
+point_size <- 2 #🟢
+transparency <- 0.7 #🟢
 
 
-plotSpectralGroups(mds_coords, variables=selectVars, s=point_size, a=transparency)
+plotSpectralGroups(mds_coords, variables=selectVars, 
+                   s=point_size, a=transparency, show_legend = TRUE)
 
 ```
 
@@ -153,10 +164,9 @@ groups <- getGroups(mds_coords, selectVars)
 The code below conducts a permutation test, where distances between randomly selected pairs of spectra across the selected groups are compared with distances between randomly selected pairs of spectra regardless of group. The p-value shown can be interpreted as an estimate for the likelihood that the distances between spectra of the different selected groups are not larger than the distances between random pairs of spectra.
 
 ```{r}
-n1 <- 8                   #FLEX
-n2 <- 17                  #FLEX
-
-alpha = 0.05              #FLEX
+n1 <- 3 #🟢
+n2 <- 4 #🟢
+alpha = 0.05 #🟢
 
 
 results <- permTestGroups(data=mds_coords, n1=n1, n2=n2, selectVars=selectVars, a=alpha, nTests=1000)

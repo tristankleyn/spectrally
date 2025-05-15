@@ -1,0 +1,56 @@
+---
+title: "formatGCMSSpectralData"
+format: html
+editor: visual
+---
+
+## Convert image data into standardized spectral table.
+
+Load helper functions from functions script.
+
+```{r}
+source('format_ImageToSpectra_functions.R')
+```
+
+Read in data, provide necessary info:
+
+-   **foldername** \~ name of folder containing images
+
+-   **dimension** \~ image axis for extracting spectra (1 fpr horizontal, 2 for vertical)
+
+-   **window** \~ start and end indices along selected axis for extracting spectra from image
+
+-   **medianNormImg** \~ normalize image pixel values by dividing by median (TRUE or FALSE)
+
+-   **sumNormSpec** \~ normalize spectra values by dividing by sum (TRUE or FALSE)
+
+-   **select_files** \~ vector of selected file names to analyse (all files will be analysed if left empty)
+
+```{r}
+folder <- 'rawData/images_clouds'
+axis <- 2
+window <- c(2000,2300)
+N <- 2
+medianNormImg <- FALSE
+sumNormSpec <- TRUE
+select_files <- c()
+
+imgData <- spectraFromImages(folder, window=window, axis=axis, N=N,
+                             select_files = select_files, 
+                             medianNormImg = medianNormImg,
+                             sumNormSpec = sumNormSpec)
+```
+
+Check the first five rows of the table:
+
+```{r}
+head(imgData, 5)
+```
+
+Export formatted data to .CSV format.
+
+```{r}
+exportToCSV_dt(imgData, name='spectraCloudImgs')
+```
+
+**All done!**

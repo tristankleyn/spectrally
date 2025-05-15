@@ -138,7 +138,7 @@ plotSpec <- function(data, sample_name, source, label=NULL, color=rgb(0,0,0,0.5)
 }
 
 
-spectralDist <- function(data, n1, n2, rt1=55, rtMax=30, labelVar=NULL, kvals=c(1,2,4,8), plotSpectra=FALSE, verbose=TRUE) {
+spectralDist <- function(data, n1, n2, rt1=55, rtMax=30, labelVar=NULL, kvals=c(1,2,4,8), plotSpectra=FALSE, fixed=TRUE, filters=c(), iters=10, verbose=TRUE) {
   ind1 <- which(names(data) %in% c('1', 'x1', 'X1', 'V1', 'v1'))
   ind2 <- as.integer(as.integer((ncol(data)-ind1)/rt1)*rtMax)
   
@@ -181,7 +181,23 @@ spectralDist <- function(data, n1, n2, rt1=55, rtMax=30, labelVar=NULL, kvals=c(
       s2 <- x2
     }
     
-    diff <- sum(abs(s1-s2))
+    if (fixed==TRUE) {
+      diff <- sum(abs(s1-s2))
+    } else {
+      subDists <- c()
+      for (fL in filters) {
+        fL <- as.integer(fL*length(s1))
+        for (i in 1:iters) {
+          start1 <- sample(1:(length(s1)-fL), 1)
+          sub1 <- s1[start1:(start1+fL)]
+          start2 <- sample(1:(length(s2)-fL), 1)
+          sub2 <- s2[start2:(start2+fL)]
+          subDists <- append(subDists, sum(abs(sub1-sub2)))
+        }
+      }
+      diff <- mean(subDists)
+    }
+    
     row <- data.frame(n1=n1, n2=n2, k=k, difference=diff)
     scores <- rbind(scores, row)
   }
@@ -193,7 +209,7 @@ spectralDist <- function(data, n1, n2, rt1=55, rtMax=30, labelVar=NULL, kvals=c(
   return(scores)
 }
 
-getDistMat <- function(data) {
+getDistMat <- function(data, fixed=TRUE, filters=c(), iters=10) {
   num_rows <- nrow(data)
   
   # Initialize an empty distance matrix
@@ -205,7 +221,7 @@ getDistMat <- function(data) {
     setTxtProgressBar(pb, i)
     for (j in (i + 1):num_rows) {
       # Calculate the spectral distance between row i and row j
-      scores <- spectralDist(data = data, n1 = i, n2 = j, kvals = c(1, 2, 4, 8, 16, 32), plotSpectra = FALSE, verbose=FALSE)
+      scores <- spectralDist(data = data, n1 = i, n2 = j, kvals = c(1, 2, 4, 8, 16, 32), plotSpectra = FALSE, fixed=fixed, filters=filters, iters=iters, verbose=FALSE)
       distance <- mean(scores$difference)
       
       # Fill in the upper triangle
@@ -221,7 +237,7 @@ getDistMat <- function(data) {
 }
 
 
-plotSpectralGroups <- function(mdsData, variables=c(), s=2, a=0.7) {
+plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_legend = TRUE) {
   if (length(variables) > 0) {
     var1 <- variables[1]
     n_levels <- nlevels(as.factor(mdsData[[var1]]))
@@ -233,55 +249,58 @@ plotSpectralGroups <- function(mdsData, variables=c(), s=2, a=0.7) {
     } else {
       colList <- c()
       for (n in 1:n_levels) {
-        colList <- append(colList, rgb(runif(1,0.3,1), runif(1,0.3,1), runif(1,0.3,1), 1))
+        colList <- append(colList, rgb(runif(1, 0.3, 1), runif(1, 0.3, 1), runif(1, 0.3, 1), 1))
       }
     }
   }
   
+  base_plot <- ggplot() +
+    theme_minimal()
+  
   if (length(variables) == 0) {
-    ggplot(mds_coords, aes(x = MDS1, y = MDS2)) + 
-      geom_point(size = s, alpha = a) +
-      theme_minimal()
+    p <- base_plot +
+      geom_point(data = mdsData, aes(x = MDS1, y = MDS2), size = s, alpha = a)
   } else if (length(variables) == 1) {
     var1 <- variables[1]
     n_levels <- nlevels(as.factor(mdsData[[var1]]))
-    mdsData <- mdsData[!is.na(mdsData[[var1]]),]
-    ggplot(mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]])) + 
-      geom_point(size = s, alpha = a) +
-      theme_minimal() + 
+    mdsData <- mdsData[!is.na(mdsData[[var1]]), ]
+    p <- base_plot +
+      geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
       scale_color_manual(values = colList)
   } else if (length(variables) == 2) {
     var1 <- variables[1]
     var2 <- variables[2]
-    mdsData <- mdsData[(!is.na(mdsData[[var1]]) & !is.na(mdsData[[var2]])),]
-    ggplot(mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]])) + 
-      facet_grid(cols = vars(.data[[var2]])) + 
-      geom_point(size = s, alpha = a) +
-      theme_minimal() + 
+    mdsData <- mdsData[(!is.na(mdsData[[var1]]) & !is.na(mdsData[[var2]])), ]
+    p <- base_plot +
+      geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
+      facet_grid(cols = vars(.data[[var2]])) +
       theme(
         panel.border = element_rect(color = "grey40", fill = NA),
         strip.background = element_rect(fill = "grey90", color = "grey40"),
         strip.text = element_text(face = "bold")
-      ) + 
+      ) +
       scale_color_manual(values = colList)
-    
   } else if (length(variables) == 3) {
     var1 <- variables[1]
     var2 <- variables[2]
     var3 <- variables[3]
-    mdsData <- mdsData[(!is.na(mdsData[[var1]]) & !is.na(mdsData[[var2]]) & !is.na(mdsData[[var3]])),]
-    ggplot(mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]])) +
-      geom_point(size = s, alpha = a) +
+    mdsData <- mdsData[(!is.na(mdsData[[var1]]) & !is.na(mdsData[[var2]]) & !is.na(mdsData[[var3]])), ]
+    p <- base_plot +
+      geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
       facet_grid(cols = vars(.data[[var2]]), rows = vars(.data[[var3]])) +
-      theme_minimal() + 
       theme(
         panel.border = element_rect(color = "grey40", fill = NA),
         strip.background = element_rect(fill = "grey90", color = "grey40"),
         strip.text = element_text(face = "bold")
-      ) + 
+      ) +
       scale_color_manual(values = colList)
-    
   }
+  
+  if (!show_legend) {
+    p <- p + theme(legend.position = "none")
+  }
+  
+  return(p)
 }
 
 getGroups <- function(data, vars) {
@@ -385,7 +404,12 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
       subsetVarLevel <- 1
     }
     data <- subset(data, data[[subsetVar]]==unique(data[[subsetVar]])[subsetVarLevel])
+    subset_text <- sprintf('Subset - %s', unique(data[[subsetVar]][subsetVarLevel]))
+  } else {
+    subset_text <- 'Subset - NONE'
   }
+
+  nGroupVars <- length(variables)
   
   data_long <- data %>%
     pivot_longer(
@@ -428,24 +452,62 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
     colList <- sample(dark2_palette, size = 8, replace = FALSE)
   }
   
-  p <- ggplot(data, aes(x = x, y = y, group = as.factor(id), color = .data[[var1]])) + # Added 'group = id' and color
-    geom_line() +
-    facet_grid(cols = vars(.data[[var2]]), rows = vars(.data[[var3]])) + 
-    labs(
-      title = element_text(sprintf('Subset - %s', unique(data[[subsetVar]][subsetVarLevel]))),
-      x = XYlabs[1],
-      y = XYlabs[2],
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      strip.text.y = element_text(angle = 0, hjust = 0),
-      strip.background = element_rect(fill = "gray90", color = "white"),
-      panel.spacing = unit(1, "lines"),
-      legend.position = "none" # Added legend position
-    ) +
-    theme(strip.text = element_text(face = "bold")) + 
-    scale_color_manual(values = colList)
+  if (length(variables) == 0) {
+    p <- ggplot(data, aes(x=x, y=y)) + 
+      geom_line() + 
+      labs(
+        title = element_text(subset_text),
+        x = XYlabs[1],
+        y = XYlabs[2],
+      ) + 
+      theme_bw() + 
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text.y = element_text(angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "gray90", color = "white"),
+        panel.spacing = unit(1, "lines"),
+        legend.position = "none" # Added legend position
+      ) + 
+      theme(strip.text = element_text(face = "bold"))
+    
+  } else if (length(variables)==1) {
+    p <- ggplot(data, aes(x=x, y=y, group=as.factor(id))) + 
+      geom_line() + 
+      facet_grid(rows = vars(.data[[var1]])) + 
+      labs(
+        title = element_text(subset_text),
+        x = XYlabs[1],
+        y = XYlabs[2],
+      ) + 
+      theme_bw() + 
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text.y = element_text(angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "gray90", color = "white"),
+        panel.spacing = unit(1, "lines"),
+        legend.position = "none" # Added legend position
+      ) + 
+      theme(strip.text = element_text(face = "bold"))
+  } else {
+    p <- ggplot(data, aes(x = x, y = y, group = as.factor(id), color = .data[[var1]])) + # Added 'group = id' and color
+      geom_line() +
+      facet_grid(cols = vars(.data[[var1]]), rows = vars(.data[[var2]])) + 
+      labs(
+        title = element_text(subset_text),
+        x = XYlabs[1],
+        y = XYlabs[2],
+      ) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text.y = element_text(angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "gray90", color = "white"),
+        panel.spacing = unit(1, "lines"),
+        legend.position = "none" # Added legend position
+      ) +
+      theme(strip.text = element_text(face = "bold")) + 
+      scale_color_manual(values = colList)
+  }
   
   if (!is.null(xLims)) {
     p <- p + xlim(xLims)
