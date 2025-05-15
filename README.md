@@ -6,8 +6,6 @@
   <img width="500" alt="image" src="https://github.com/user-attachments/assets/3e437c48-babe-414b-9bf8-78b1e257ec59" />
 </div>
 
-##
-
 Spectrally is a repostitory containing code notebooks designed for facilitating analysis of spectral data, where spectra can be any series of measurements forming a 1-dimensional spectrum. The aim of the notebook is to allow users to load any kind of spectral data, analyse and compare spectra, and export results easily without having to code themselves. Several parameters used for the analysis are flexible and can be adjusted to achieve optimal results.
 
 
