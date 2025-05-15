@@ -11,13 +11,13 @@ Spectrally is a repostitory containing code notebooks designed for facilitating 
 
 ### spectrally/
 
-> #### └── formattedData/
+> #### └── [formattedData](https://github.com/tristankleyn/spectrally/tree/main/formattedData)/
 > Contains formatted standard spectral tables in .csv format for different types of example spectral data
 
-> #### └── formattingScripts/
+> #### └── [formattingScripts](https://github.com/tristankleyn/spectrally/tree/main/formattingScripts)/
 > Contains scripts for converting specific types of input data into standard spectral tables (compatible with groupSpectra.qmd)
 
-> #### └── rawData/
+> #### └── [rawData](https://github.com/tristankleyn/spectrally/tree/main/rawData)/
 > Contains raw example data to format into standard spectral tables (compatible with groupSpectra.qmd)
 
 > #### └── groupSpectra.qmd
