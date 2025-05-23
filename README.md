@@ -36,3 +36,7 @@ Running the cell to load required functions often shows warnings - just run it a
 <img width="441" alt="image" src="https://github.com/user-attachments/assets/fe2ede09-4028-4bb5-b674-d6c1302cf187" />
 
 
+#### 2) Read in your spectral data
+
+<img width="428" alt="image" src="https://github.com/user-attachments/assets/2ba39536-fcd9-44d5-b04a-32fa461a5d0f" />
+
