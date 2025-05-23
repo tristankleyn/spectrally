@@ -46,9 +46,20 @@ To anayse spectral data in Spectrally, your data must be prepared in a standardi
 </p>
 
 <p align="justify">
-This required formaatting is explained in the Spectrally notebook and is checked automatically when your data is loaded.
+This required formaatting is explained in the Spectrally notebook and is checked automatically when your data is loaded. 
 </p>
 
 <p align="left">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/2ba39536-fcd9-44d5-b04a-32fa461a5d0f" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/613a2cb7-11b4-4cf1-9b2c-588e34c1446f" />
 </p>
+
+
+#### 3) Optional step: Reduce size of dataset to speed up analysis
+<p align="justify">
+After reading in your data in the correct format, there is the option to down sample and/or compress your data to improve efficiency in analysis. This really only makes a difference for calculating pairwise similarities later in the script, which is computationally expensive and can be significantly sped up by reducing your dataset by compression of spectra or down sampling. 
+</p>
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/589e0271-7fcb-4690-9793-926e4ef1b504" />
+</p>
+
