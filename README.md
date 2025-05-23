@@ -50,7 +50,7 @@ This required formaatting is explained in the Spectrally notebook and is checked
 </p>
 
 <p align="left">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/613a2cb7-11b4-4cf1-9b2c-588e34c1446f" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/a89799c1-7d13-4e6e-b92d-90fb105444d2" />
 </p>
 
 
@@ -60,6 +60,15 @@ After reading in your data in the correct format, there is the option to down sa
 </p>
 
 <p align="left">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/589e0271-7fcb-4690-9793-926e4ef1b504" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/8c05fc61-559c-4e8a-946f-8d34ee3118c6" />
+</p>
+
+#### 4) Visualise your data
+<p align="justify">
+Two cells for plotting your data in different ways are available in the next part of the Spectrally notebook. Using the function overlaySpectra(), the first cell outputs a plot overlaying spectral data grouped by specified metavariables. In the example below, Raman spectroscopy data is shown overlaid for different types of cells (columns) across numbered trials (rows). Several parameters can be adjusted here to contrl plot aesthetics such as grid lines, plot borders, and font sizes.
+</p>
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
 </p>
 
