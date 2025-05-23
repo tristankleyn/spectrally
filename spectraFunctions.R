@@ -2,6 +2,7 @@ library(dplyr)
 library(DT)
 library(RColorBrewer)
 library(tidyr)
+library(scales)
 
 
 printInfo <- function(data, infoType='dims') {
@@ -396,7 +397,12 @@ permTestGroups <- function(data, n1, n2, selectVars=c(), a=0.05, nTests=100) {
   return(list(nullDist=dists, xTest=dist12, pval=p, g1=G1, g2=G2))
 }
 
-overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=NULL, xScale=NULL, xLims=NULL, XYlabs=c('Index', 'Spectrum value')) {
+overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=NULL, 
+                           xScale=NULL, xLims=NULL, XYlabs=c('Index', 'Spectrum value'),
+                           gridLines='both', plot_borders=TRUE, y_breaks=4,
+                           axisTitleFont=12, axisTitleMar=10, 
+                           axisLabelFont=10, groupLabelFont=12) {
+  
   ind1 <- which(names(data)=='1')
   
   if (!is.null(subsetVar)) {
@@ -462,13 +468,18 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
       ) + 
       theme_bw() + 
       theme(
-        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
+        axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
+        axis.text.y = element_text(size = axisLabelFont),
         strip.text.y = element_text(angle = 0, hjust = 0),
         strip.background = element_rect(fill = "gray90", color = "white"),
         panel.spacing = unit(1, "lines"),
         legend.position = "none" # Added legend position
       ) + 
-      theme(strip.text = element_text(face = "bold"))
+      theme(strip.text = element_text(face = "bold")) + 
+      scale_y_continuous(
+        breaks = scales::breaks_pretty(n = y_breaks))
     
   } else if (length(variables)==1) {
     p <- ggplot(data, aes(x=x, y=y, group=as.factor(id))) + 
@@ -481,13 +492,20 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
       ) + 
       theme_bw() + 
       theme(
-        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
+        axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
+        axis.text.y = element_text(size = axisLabelFont),
+        strip.text = element_text(size = groupLabelFont),
         strip.text.y = element_text(angle = 0, hjust = 0),
         strip.background = element_rect(fill = "gray90", color = "white"),
         panel.spacing = unit(1, "lines"),
         legend.position = "none" # Added legend position
       ) + 
-      theme(strip.text = element_text(face = "bold"))
+      theme(strip.text = element_text(face = "bold")) + 
+      scale_y_continuous(
+        breaks = scales::breaks_pretty(n = y_breaks)
+      )
   } else {
     p <- ggplot(data, aes(x = x, y = y, group = as.factor(id), color = .data[[var1]])) + # Added 'group = id' and color
       geom_line() +
@@ -499,18 +517,66 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
       ) +
       theme_minimal() +
       theme(
-        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
+        axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
+        axis.text.y = element_text(size = axisLabelFont),
+        strip.text = element_text(size = groupLabelFont),
         strip.text.y = element_text(angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "gray90", color = "white"),
+        strip.background = element_rect(fill = "#e6f0f1", color = "#d4e3e5"),
+        strip.text.margin = margin(t = 5, r = 5, b = 5, l = 5, unit = "pt"),
         panel.spacing = unit(1, "lines"),
         legend.position = "none" # Added legend position
       ) +
-      theme(strip.text = element_text(face = "bold")) + 
-      scale_color_manual(values = colList)
+      theme(strip.text = element_text()) + 
+      scale_color_manual(values = colList) + 
+      scale_y_continuous(
+        breaks = scales::breaks_pretty(n = y_breaks)
+      )
   }
   
   if (!is.null(xLims)) {
     p <- p + xlim(xLims)
+  }
+  
+  if (!is.null(gridLines)) {
+    if (gridLines == 'h') {
+      p <- p + theme(
+        panel.grid.major.x = element_blank(), # Remove vertical major gridlines
+        panel.grid.major.y = element_line(color = "grey92"), # Keep horizontal major gridlines
+        panel.grid.minor.x = element_blank(), # Remove vertical minor gridlines
+        panel.grid.minor.y = element_line(color = "grey92", linewidth = 0.25) # Add horizontal minor gridlines
+      )
+    } else if (gridLines == 'v') {
+      p <- p + theme(
+        panel.grid.major.x = element_line(color = "grey92"), # Keep vertical major gridlines
+        panel.grid.major.y = element_blank(), # Remove horizontal major gridlines
+        panel.grid.minor.x = element_line(color = "grey92", linewidth = 0.25), # Add vertical minor gridlines
+        panel.grid.minor.y = element_blank() # Remove horizontal minor gridlines
+      )
+    } else if (gridLines == 'both') {
+      p <- p + theme(
+        panel.grid.major.x = element_line(color = "grey92"), # Keep vertical major gridlines
+        panel.grid.major.y = element_line(color = "grey92"), # Keep horizontal major gridlines
+        panel.grid.minor.x = element_line(color = "grey92", linewidth = 0.25), # Add vertical minor gridlines
+        panel.grid.minor.y = element_line(color = "grey92", linewidth = 0.25) # Add horizontal minor gridlines
+      )
+    }
+  } else { # If gridLines is NULL, remove all gridlines
+    p <- p + theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+    )
+  }
+  
+  if (plot_borders) {
+    p <- p + theme(
+      panel.border = element_rect(color = "#d4e3e5", fill = NA, linewidth = 0.5) # Add light grey border
+    )
+  } else {
+    p <- p + theme(
+      panel.border = element_blank() # Remove panel border
+    )
   }
   
   suppressWarnings(print(p))
@@ -630,4 +696,9 @@ downsampleData <- function(data, fraction = 1.0, variables = c()) {
     cat(sprintf('\nDownsampled data from \033[1m%s\033[0m to \033[1m%s\033[0m samples', original, nrow(data)))
   }
   return(data)
+}
+
+sourceFunctions <- function(path, warnings=FALSE) {
+  source(path)
+  source(path)
 }

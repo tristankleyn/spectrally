@@ -30,7 +30,9 @@ This code block below loads in custom functions required for the spectral analys
 library(DT) 
 library(ggplot2)
 library(RColorBrewer)
+library(scales)
 
+source('spectraFunctions.R')
 source('spectraFunctions.R')
 ```
 
@@ -66,8 +68,8 @@ tData <- info[[1]]
 If your data contains many samples, you may consider reudcing the size of your dataset to improve the efficiency of this analysis. Use the code below to downsample or compress your data. Downsampling involves sub-sampling your data randomly to reduce the number of samples to a fraction of the original dataset defined by **downsample_factor**, while compressing involves reducing the length of your spectra by taking a moving average of each, where **compress_factor** determines the number of values averaged in each non-overlapping step.
 
 ```{r}
-downsample_factor <- 1 #🟢
-compress_factor <- 3 #🟢
+downsample_factor <- 0.75 #🟢
+compress_factor <- 1 #🟢
 vars <- c('filename') #🟢
 
 tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% compressData(k=compress_factor)
@@ -78,17 +80,31 @@ tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% c
 Use the code below to visualize your spectra by variable groupings of your choosing:
 
 ```{r}
-subsetVar <- 'filename' #🟢
+subsetVar <- NULL #🟢
 subsetVarLevel <- 1 #🟢
-selectVars <- c() #🟢
+selectVars <- c('class', 'region') #🟢
 
 xScale <- c(5,55) #🟢
 xLims <- c(5,30) #🟢
 XYlabs <- c('Retention time (min)', 'Relative abundance') #🟢
 
+#customise asthetics
+gridLines <- 'h'
+axisTitleFontSize <- 10
+axisTitleMargin <- 10
+axisLabelFontSize <- 8
+groupLabelFontSize <- 8
+yBreaks <- 2
+
 overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
                subsetVarLevel=subsetVarLevel, 
-               xScale = xScale, xLims = xLims,XYlabs = XYlabs)
+               xScale = xScale, xLims = xLims,XYlabs = XYlabs,
+               gridLines = 'h', 
+               y_breaks = yBreaks,
+               axisTitleFont = axisTitleFontSize,
+               axisTitleMar = axisTitleMargin,
+               axisLabelFont = axisLabelFontSize,
+               groupLabelFont = groupLabelFontSize)
 
 ```
 
@@ -99,7 +115,7 @@ Once you've correctly uploaded your data, we can now begin to analyse spectra. T
 ```{r}
 n1 <- sample(1:nrow(tData), 1) #🟢
 n2 <- sample(1:nrow(tData), 1) #🟢                 
-label_var <- 'filename' #🟢                 
+label_var <- 'class' #🟢                 
 
 scores <- spectralDist(data=tData, n1=n1, n2=n2, labelVar=label_var, plotSpectra=TRUE, verbose=FALSE)
 
@@ -125,9 +141,9 @@ Using this distance metric, we can compute spectral distances between all pairs 
 **NOTE**: The amount of time required to compute the distance matrix increases exponentially with the number of spectra. If you have a large number of spectra, you may want to consider dividing your dataset into different sub-datasets before computing any distance matrices.
 
 ```{r}
-fixed <- TRUE #🟢
-filters <- c() #🟢
-iterations <- c() #🟢
+fixed <- FALSE #🟢
+filters <- c(0.05,0.15,0.3) #🟢
+iterations <- 10 #🟢
 
 DM <- getDistMat(tData, fixed=fixed, filters=filters, iters=iterations)
 
@@ -143,7 +159,7 @@ for (var in VARIABLES) {
 We can visualize similarity in spectra using the resulting MDS coordinates:
 
 ```{r}
-selectVars <- c('filename') #🟢
+selectVars <- c('region', 'class') #🟢
 point_size <- 2 #🟢
 transparency <- 0.7 #🟢
 
@@ -165,7 +181,7 @@ The code below conducts a permutation test, where distances between randomly sel
 
 ```{r}
 n1 <- 3 #🟢
-n2 <- 4 #🟢
+n2 <- 8 #🟢
 alpha = 0.05 #🟢
 
 
