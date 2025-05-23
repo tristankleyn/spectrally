@@ -100,9 +100,7 @@ The final part of the Spectrally workflow allows for simple statistical comparis
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/b61b2615-3d18-4b4e-a606-cbcb1d4536c6" />
 </p>
 
-<p align="justify">
 And the following code cell conducts a [permutation test](https://statisticsbyjim.com/glossary/permutation-test/) between select groups, whereby distances between means of random samples from each group are compared to distances between random samples. The proportion of times where the observed distance between means was greater than chance is shown and can compared with a significance level (alpha) to estimate whether or not there is a statistical difference between the select groups.
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/a73765b8-4019-40b8-b34a-0d982956556e" />
