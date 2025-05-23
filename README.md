@@ -69,7 +69,7 @@ Two cells for plotting your data in different ways are available in the next par
 </p>
 
 <p align="left">
-<img width="300" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
 </p>
 
 <p align="justify">
@@ -77,7 +77,15 @@ A second plotting cell allows for direct spectral comparison between two indiviu
 </p>
 
 <p align="left">
-<img width="300" alt="image" src="https://github.com/user-attachments/assets/2418a344-67e0-4141-9c78-7c22c555651b" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/2418a344-67e0-4141-9c78-7c22c555651b" />
 </p>
 
 
+#### 5) Analyzing spectral similarity across the dataset
+<p align="justify">
+The next part of the Spectrally workflow employs multi-dimensional scaling (MDS) to visualize spectral similarity across in the dataset in two dimensions. The primary objective of MDS is to represent a set of observations in a lower-dimensional Euclidean space while preserving the inter-observation distances in the original data (explained in further detail [here](https://www.bristol.ac.uk/media-library/sites/cmm/migrated/documents/chapter3.pdf)). The input for MDS is a pairwise distance matrix between all observations - naturally, this is computationally expensive to calculate and may take up to an hour or longer for datasets containing hundreds of observations. The result obtained from MDS is a plot such as the one below, which shows Raman spectra in MDS space grouped by metavariables such as cell type and trial.
+</p>
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/b4d2766b-1912-49e0-8791-2b0aa3869634" />
+</p>
