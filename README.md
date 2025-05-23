@@ -25,3 +25,72 @@ Spectrally is a repostitory containing code notebooks designed for facilitating 
 
 > > #### └── spectraFunctions.R
 > Script containing functions required by groupSpectra.qmd
+
+
+
+### Spectrally: Step-by-step
+
+##
+#### 1) Load required functions from separate script
+Running the cell to load required functions often shows warnings - just run it a second time to make these go away.
+
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/fe2ede09-4028-4bb5-b674-d6c1302cf187" />
+
+
+#### 2) Read in your spectral data
+To anayse spectral data in Spectrally, your data must be prepared in a standardized way and saved in .CSV format, where the first column provides the ID of each sample, the columns following ID contain optional metadata on sample, and all columns afterwards contain the spectral data with columns labelled 1 to N, where N is the number of spectral values for each sample. The image below shows an example of this format for an [open-access Kaggle dataset](https://www.kaggle.com/datasets/andriitrelin/cells-raman-spectra) with Raman spectroscopy data on cancerous and normal cells. Here, type and trial represent metavariables for the data and spectral values are provided in numbered columns to their right:
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/9881ae0b-03ef-4783-b3bf-e5ffbb3260d1" />
+</p>
+
+<p align="justify">
+This required formaatting is explained in the Spectrally notebook and is checked automatically when your data is loaded. 
+</p>
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/a89799c1-7d13-4e6e-b92d-90fb105444d2" />
+</p>
+
+
+#### 3) Optional step: Reduce size of dataset to speed up analysis
+After reading in your data in the correct format, there is the option to down sample and/or compress your data to improve efficiency in analysis. This really only makes a difference for calculating pairwise similarities later in the script, which is computationally expensive and can be significantly sped up by reducing your dataset by compression of spectra or down sampling. 
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/8c05fc61-559c-4e8a-946f-8d34ee3118c6" />
+</p>
+
+#### 4) Visualise your data
+Two cells for plotting your data in different ways are available in the next part of the Spectrally notebook. Using the function overlaySpectra(), the first cell outputs a plot overlaying spectral data grouped by specified metavariables. In the example below, Raman spectroscopy data is shown overlaid for different types of cells (columns) across numbered trials (rows). Several parameters can be adjusted here to contrl plot aesthetics such as grid lines, plot borders, and font sizes.
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
+</p>
+
+A second plotting cell allows for direct spectral comparison between two indiviudal samples. The spectralDist() function plots two individual spectra and estimates the spectral distance between them. This is done by defining a set of k-values (which by default are 1, 2, 4, and 8), which represent different window sizes for smoothing the spectra with a moving average, before summing the absolute differences between each corresponding value across the two spectra. I.e. a k-value of 1 means no smoothing - absolute differences between each original corresponding spectral values are summed to give a distance score, while a k-value of 2 requires that instead, absolute differences are measured between the means of each pair of 2 succesive values. Averaging distance scores across different k-values allows for the overall distance metric to  capture both local and global similarities between spectra.
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/2418a344-67e0-4141-9c78-7c22c555651b" />
+</p>
+
+
+#### 5) Analyzing spectral similarity across the dataset
+The next part of the Spectrally workflow employs multi-dimensional scaling (MDS) to visualize spectral similarity across in the dataset in two dimensions. The primary objective of MDS is to represent a set of observations in a lower-dimensional Euclidean space while preserving the inter-observation distances in the original data (explained in further detail [here](https://www.bristol.ac.uk/media-library/sites/cmm/migrated/documents/chapter3.pdf)). The input for MDS is a pairwise distance matrix between all observations - naturally, this is computationally expensive to calculate and may take up to an hour or longer for datasets containing hundreds of observations. The result obtained from MDS is a plot such as the one below, which shows Raman spectra in MDS space grouped by metavariables such as cell type and trial.
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/64790c16-a347-43a4-b371-e55d21c8d8b1" />
+</p>
+
+
+#### 6) Test for statistical differences between groups
+The final part of the Spectrally workflow allows for simple statistical comparisons to made between groups based on their distributions in MDS space. The code cell shown below lists distinct groups based on the variables selected in the previous code cell:
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/b61b2615-3d18-4b4e-a606-cbcb1d4536c6" />
+</p>
+
+And the following code cell conducts a [permutation test](https://statisticsbyjim.com/glossary/permutation-test/) between select groups, whereby distances between means of random samples from each group are compared to distances between random samples. The proportion of times where the observed distance between means was greater than chance is shown and can compared with a significance level (alpha) to estimate whether or not there is a statistical difference between the select groups.
+
+<p align="left">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/a73765b8-4019-40b8-b34a-0d982956556e" />
+</p>
