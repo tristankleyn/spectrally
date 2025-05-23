@@ -42,7 +42,7 @@ To anayse spectral data in Spectrally, your data must be prepared in a standardi
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/9881ae0b-03ef-4783-b3bf-e5ffbb3260d1" />
 
 
-This required formaatting is explained in the Spectrally notebook and your data will be checked by the checkData() function upon being loaded:
+This required formaatting is explained in the Spectrally notebook and is checked automatically when your data is loaded.
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/2ba39536-fcd9-44d5-b04a-32fa461a5d0f" />
 
