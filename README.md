@@ -37,9 +37,7 @@ Running the cell to load required functions often shows warnings - just run it a
 
 
 #### 2) Read in your spectral data
-<p align="justify">
 To anayse spectral data in Spectrally, your data must be prepared in a standardized way and saved in .CSV format, where the first column provides the ID of each sample, the columns following ID contain optional metadata on sample, and all columns afterwards contain the spectral data with columns labelled 1 to N, where N is the number of spectral values for each sample. The image below shows an example of this format for an [open-access Kaggle dataset](https://www.kaggle.com/datasets/andriitrelin/cells-raman-spectra) with Raman spectroscopy data on cancerous and normal cells. Here, type and trial represent metavariables for the data and spectral values are provided in numbered columns to their right:
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/9881ae0b-03ef-4783-b3bf-e5ffbb3260d1" />
@@ -55,26 +53,20 @@ This required formaatting is explained in the Spectrally notebook and is checked
 
 
 #### 3) Optional step: Reduce size of dataset to speed up analysis
-<p align="justify">
 After reading in your data in the correct format, there is the option to down sample and/or compress your data to improve efficiency in analysis. This really only makes a difference for calculating pairwise similarities later in the script, which is computationally expensive and can be significantly sped up by reducing your dataset by compression of spectra or down sampling. 
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/8c05fc61-559c-4e8a-946f-8d34ee3118c6" />
 </p>
 
 #### 4) Visualise your data
-<p align="justify">
 Two cells for plotting your data in different ways are available in the next part of the Spectrally notebook. Using the function overlaySpectra(), the first cell outputs a plot overlaying spectral data grouped by specified metavariables. In the example below, Raman spectroscopy data is shown overlaid for different types of cells (columns) across numbered trials (rows). Several parameters can be adjusted here to contrl plot aesthetics such as grid lines, plot borders, and font sizes.
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
 </p>
 
-<p align="justify">
 A second plotting cell allows for direct spectral comparison between two indiviudal samples, while the code cells after this second plot demonstrate how spectral distance can calculated by averaging distance between spectra using varying window sizes.
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/2418a344-67e0-4141-9c78-7c22c555651b" />
@@ -82,9 +74,7 @@ A second plotting cell allows for direct spectral comparison between two indiviu
 
 
 #### 5) Analyzing spectral similarity across the dataset
-<p align="justify">
 The next part of the Spectrally workflow employs multi-dimensional scaling (MDS) to visualize spectral similarity across in the dataset in two dimensions. The primary objective of MDS is to represent a set of observations in a lower-dimensional Euclidean space while preserving the inter-observation distances in the original data (explained in further detail [here](https://www.bristol.ac.uk/media-library/sites/cmm/migrated/documents/chapter3.pdf)). The input for MDS is a pairwise distance matrix between all observations - naturally, this is computationally expensive to calculate and may take up to an hour or longer for datasets containing hundreds of observations. The result obtained from MDS is a plot such as the one below, which shows Raman spectra in MDS space grouped by metavariables such as cell type and trial.
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/64790c16-a347-43a4-b371-e55d21c8d8b1" />
@@ -92,9 +82,7 @@ The next part of the Spectrally workflow employs multi-dimensional scaling (MDS)
 
 
 #### 6) Test for statistical differences between groups
-<p align="justify">
 The final part of the Spectrally workflow allows for simple statistical comparisons to made between groups based on their distributions in MDS space. The code cell shown below lists distinct groups based on the variables selected in the previous code cell:
-</p>
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/b61b2615-3d18-4b4e-a606-cbcb1d4536c6" />
