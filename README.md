@@ -26,7 +26,8 @@ Spectrally is a repostitory containing code notebooks designed for facilitating 
 > > #### └── spectraFunctions.R
 > Script containing functions required by groupSpectra.qmd
 
-##
+
+
 ### Spectrally: Step-by-step
 
 ##
