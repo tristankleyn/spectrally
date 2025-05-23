@@ -33,6 +33,6 @@ Analysis with Spectrally consists of the following steps:
 #### 1) Load required functions from separate script
 Running the cell to load required functions often shows warnings - just run it a second time to make these go away.
 
-<img width="441" alt="image" src="https://github.com/user-attachments/assets/6dc3572d-96b8-4b53-b1eb-2bd2144906f9" />
+<img width="441" alt="image" src="https://github.com/user-attachments/assets/fe2ede09-4028-4bb5-b674-d6c1302cf187" />
 
 
