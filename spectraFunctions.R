@@ -784,7 +784,39 @@ downsampleData <- function(data, fraction = 1.0, variables = c()) {
   return(data)
 }
 
-sourceFunctions <- function(path, warnings=FALSE) {
-  source(path)
-  source(path)
+exportResults <- function(data, dm, p1, p2, dims=c(7,5), DPI=400) {
+  current_date <- Sys.Date()
+  current_datetime <- Sys.time()
+  
+  datetime_string <- format(current_datetime, "%d%m-%H%M")
+  folder_name <- paste0("output", datetime_string)
+  
+  if (!dir.exists(folder_name)) {
+    dir.create(folder_name)
+  } else {
+  }
+  
+  if (!dir.exists(sprintf('%s/figures', folder_name))) {
+    dir.create(sprintf('%s/figures', folder_name))
+  }
+  
+  path <- sprintf('%s/P2-%s.png', folder_name, datetime_string)
+  
+  if (exists(data)) {
+    write.csv(data, sprintf('%s/spectra.csv', folder_name), row.names = FALSE)
+    cat(sprintf('Exported spectral data to %s/spectra.csv', folder_name))
+  }
+  if (exists(dm)) {
+    write.csv(dm, sprintf('%s/distances.csv', folder_name), row.names = FALSE)
+    cat(sprintf('Exported distance matrix to %s/distances.csv', folder_name))
+  }
+  if (exists(p1)) {
+    ggsave(sprintf('%s/figures/P1.png', folder_name), plot = p1, width = dims[1], height = dims[2], dpi = DPI)
+    cat(sprintf('Exported plot P1 to %s/figures/P1.png', folder_name))
+  }
+  if (exists(p2)) {
+    ggsave(sprintf('%s/figures/P2.png', folder_name), plot = p2, width = dims[1], height = dims[2], dpi = DPI)
+    cat(sprintf('Exported plot P2 to %s/figures/P2.png', folder_name))
+  }
+  
 }

@@ -68,9 +68,9 @@ tData <- info[[1]]
 If your data contains many samples, you may consider reudcing the size of your dataset to improve the efficiency of this analysis. Use the code below to downsample or compress your data. Downsampling involves sub-sampling your data randomly to reduce the number of samples to a fraction of the original dataset defined by **downsample_factor**, while compressing involves reducing the length of your spectra by taking a moving average of each, where **compress_factor** determines the number of values averaged in each non-overlapping step.
 
 ```{r}
-downsample_factor <- 0.75 #🟢
+downsample_factor <- 0.01 #🟢
 compress_factor <- 1 #🟢
-vars <- c('type') #🟢
+vars <- c('species', 'enc_id') #🟢
 
 tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% compressData(k=compress_factor)
 ```
@@ -80,12 +80,12 @@ tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% c
 Use the code below to visualize your spectra by variable groupings of your choosing:
 
 ```{r}
-subsetVar <- 'species' #🟢
+subsetVar <- NULL #🟢
 subsetVarLevel <- 1 #🟢
-selectVars <- c('source', 'temperature') #🟢
+selectVars <- c('species') #🟢
 
-xScale <- c(5,55) #🟢
-xLims <- c(5,30) #🟢
+xScale <- NULL #🟢
+xLims <- NULL #🟢
 XYlabs <- c('Retention time (min)', 'Relative abundance') #🟢
 
 #customise asthetics
@@ -97,8 +97,8 @@ axisLabelFontSize <- 8
 groupLabelFontSize <- 8
 yBreaks <- 4
 theme <- 'light'
-backgroundSet <- TRUE
-savePlot <- TRUE
+backgroundSet <- FALSE
+savePlot <- FALSE
 
 P1 <- overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
                subsetVarLevel=subsetVarLevel, 
@@ -116,7 +116,7 @@ P1 <- overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
 
 ```
 
-### 2) Compare pair of two spectra
+### 2) Compare individual spectra
 
 Once you've correctly uploaded your data, we can now begin to analyse spectra. To start, enter two row numbers **n1** and **n2** into the code below to compare two individual spectra:
 
@@ -142,7 +142,7 @@ Use the **mean difference** across all scores as a universal spectral distance m
 print(mean(scores$difference))
 ```
 
-### 2) Compute distance matrix across all spectra
+### 3) Compute distance matrix across all spectra
 
 Using this distance metric, we can compute spectral distances between all pairs of spectra in the dataframe **tSpec**.The code block below computes this and uses **multi-dimensional scaling (MDS)** to map all spectral profiles in two-dimensions while preserving pairwise distances.
 
@@ -167,7 +167,7 @@ for (var in VARIABLES) {
 We can visualize similarity in spectra using the resulting MDS coordinates:
 
 ```{r}
-selectVars <- c('temperature', 'species', 'source') #🟢
+selectVars <- c('species') #🟢
 
 #plot aesthetics
 point_size <- 2 #🟢
@@ -178,7 +178,7 @@ axisLabelFontSize <- 8
 plotBorders = TRUE
 theme <- 'dark'
 backgroundSet <- TRUE
-savePlot <- TRUE
+savePlot <- FALSE
 
 P2 <- plotSpectralGroups(mds_coords, variables=selectVars, 
                    s=point_size, a=transparency, 
@@ -194,7 +194,7 @@ P2 <- plotSpectralGroups(mds_coords, variables=selectVars,
 
 ```
 
-### 3) Compare groups of data using permutation testing
+### 4) Compare groups of data using permutation testing
 
 In addition to visualizing spectral groups via MDS, you can also compare specific groups of spectra statistically using permutation tests. Select variables for grouping and run the code below to identify distinct groups in your data.
 
@@ -205,10 +205,61 @@ groups <- getGroups(mds_coords, selectVars)
 The code below conducts a permutation test, where distances between randomly selected pairs of spectra across the selected groups are compared with distances between randomly selected pairs of spectra regardless of group. The p-value shown can be interpreted as an estimate for the likelihood that the distances between spectra of the different selected groups are not larger than the distances between random pairs of spectra.
 
 ```{r}
-n1 <- 5 #🟢
-n2 <- 5 #🟢
+n1 <- 1 #🟢
+n2 <- 7 #🟢
 alpha = 0.05 #🟢
 
 
 results <- permTestGroups(data=mds_coords, n1=n1, n2=n2, selectVars=selectVars, a=alpha, nTests=1000)
+```
+
+## Export results
+
+Run the code below to export your results to a folder that will be automatically labelled by the current date and time. The folder will export the following files if they have been created:
+
+-   **figures \|** folder containing plots P1 (overlaid spectra) and P2 (MDS plot) in .PNG format.
+
+-   **spectra.csv \|** table of raw data after down sampling or compression in .CSV format.
+
+-   **distances.csv** **\|** distance matrix (input for MDS) in .CSV format.
+
+```{r}
+set_PlotWidth <- 7
+set_PlotHeight <- 5
+set_PlotDPI <- 400
+
+current_date <- Sys.Date()
+current_datetime <- Sys.time()
+
+datetime_string <- format(current_datetime, "%d%m-%H%M")
+folder_name <- paste0("output", datetime_string)
+
+if (!dir.exists(folder_name)) {
+  dir.create(folder_name)
+} else {
+}
+
+if (!dir.exists(sprintf('%s/figures', folder_name))) {
+  dir.create(sprintf('%s/figures', folder_name))
+}
+
+if (exists('tData')) {
+  write.csv(tData, sprintf('%s/spectra.csv', folder_name), row.names = FALSE)
+  cat(sprintf('Exported spectral data to %s/spectra.csv \n', folder_name))
+}
+if (exists('DM')) {
+  write.csv(DM, sprintf('%s/distances.csv', folder_name), row.names = FALSE)
+  cat(sprintf('Exported distance matrix to %s/distances.csv \n', folder_name))
+}
+if (exists('P1')) {
+  ggsave(sprintf('%s/figures/P1.png', folder_name), plot = P1, 
+         width = set_PlotWidth, height = set_PlotHeight, dpi = set_PlotDPI)
+  cat(sprintf('Exported plot P1 to %s/figures/P1.png \n', folder_name))
+}
+if (exists('P2')) {
+  ggsave(sprintf('%s/figures/P2.png', folder_name), plot = P2, 
+         width = set_PlotWidth, height = set_PlotHeight, dpi = set_PlotDPI)
+  cat(sprintf('Exported plot P2 to %s/figures/P2.png', folder_name))
+}
+  
 ```
