@@ -37,6 +37,11 @@ Running the cell to load required functions often shows warnings - just run it a
 
 
 #### 2) Read in your spectral data
+To anayse spectral data in Spectrally, your data must be prepared in a standardized way and saved in .CSV format, where the first column provides the ID of each sample, the columns following ID contain optional metadata on sample, and all columns afterwards contain the spectral data with columns labelled 1 to N, where N is the number of spectral values for each sample. The image below shows an example of this format for an [open-access Kaggle dataset](https://www.kaggle.com/datasets/andriitrelin/cells-raman-spectra) with Raman spectroscopy data on cancerous and normal cells:
+
+<img width="679" alt="image" src="https://github.com/user-attachments/assets/9881ae0b-03ef-4783-b3bf-e5ffbb3260d1" />
+
+This standardized formaatting is explained in the Spectrally notebook and your data will be checked by the checkData() function upon being loaded:
 
 <img width="428" alt="image" src="https://github.com/user-attachments/assets/2ba39536-fcd9-44d5-b04a-32fa461a5d0f" />
 
