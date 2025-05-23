@@ -87,5 +87,5 @@ The next part of the Spectrally workflow employs multi-dimensional scaling (MDS)
 </p>
 
 <p align="left">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/b4d2766b-1912-49e0-8791-2b0aa3869634" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/64790c16-a347-43a4-b371-e55d21c8d8b1" />
 </p>
