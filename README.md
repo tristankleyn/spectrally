@@ -69,6 +69,15 @@ Two cells for plotting your data in different ways are available in the next par
 </p>
 
 <p align="left">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
 </p>
+
+<p align="justify">
+A second plotting cell allows for direct spectral comparison between two indiviudal samples, while the code cells after this second plot demonstrate how spectral distance can calculated by averaging distance between spectra using varying window sizes.
+</p>
+
+<p align="left">
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/2418a344-67e0-4141-9c78-7c22c555651b" />
+</p>
+
 
