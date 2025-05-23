@@ -33,7 +33,7 @@ library(RColorBrewer)
 library(scales)
 
 source('spectraFunctions.R')
-source('spectraFunctions.R')
+
 ```
 
 ### Read in raw spectral data
@@ -70,7 +70,7 @@ If your data contains many samples, you may consider reudcing the size of your d
 ```{r}
 downsample_factor <- 0.75 #🟢
 compress_factor <- 1 #🟢
-vars <- c('filename') #🟢
+vars <- c('type') #🟢
 
 tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% compressData(k=compress_factor)
 ```
@@ -80,9 +80,9 @@ tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% c
 Use the code below to visualize your spectra by variable groupings of your choosing:
 
 ```{r}
-subsetVar <- NULL #🟢
+subsetVar <- 'species' #🟢
 subsetVarLevel <- 1 #🟢
-selectVars <- c('class', 'region') #🟢
+selectVars <- c('source', 'temperature') #🟢
 
 xScale <- c(5,55) #🟢
 xLims <- c(5,30) #🟢
@@ -90,21 +90,29 @@ XYlabs <- c('Retention time (min)', 'Relative abundance') #🟢
 
 #customise asthetics
 gridLines <- 'h'
+plotBorders <- TRUE
 axisTitleFontSize <- 10
 axisTitleMargin <- 10
 axisLabelFontSize <- 8
 groupLabelFontSize <- 8
-yBreaks <- 2
+yBreaks <- 4
+theme <- 'light'
+backgroundSet <- TRUE
+savePlot <- TRUE
 
-overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
+P1 <- overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
                subsetVarLevel=subsetVarLevel, 
                xScale = xScale, xLims = xLims,XYlabs = XYlabs,
                gridLines = 'h', 
+               plot_borders = plotBorders,
                y_breaks = yBreaks,
                axisTitleFont = axisTitleFontSize,
                axisTitleMar = axisTitleMargin,
                axisLabelFont = axisLabelFontSize,
-               groupLabelFont = groupLabelFontSize)
+               groupLabelFont = groupLabelFontSize,
+               selectTheme=theme,
+               backgroundSet=backgroundSet,
+               savePlot = savePlot)
 
 ```
 
@@ -115,7 +123,7 @@ Once you've correctly uploaded your data, we can now begin to analyse spectra. T
 ```{r}
 n1 <- sample(1:nrow(tData), 1) #🟢
 n2 <- sample(1:nrow(tData), 1) #🟢                 
-label_var <- 'class' #🟢                 
+label_var <- 'species' #🟢                 
 
 scores <- spectralDist(data=tData, n1=n1, n2=n2, labelVar=label_var, plotSpectra=TRUE, verbose=FALSE)
 
@@ -141,7 +149,7 @@ Using this distance metric, we can compute spectral distances between all pairs 
 **NOTE**: The amount of time required to compute the distance matrix increases exponentially with the number of spectra. If you have a large number of spectra, you may want to consider dividing your dataset into different sub-datasets before computing any distance matrices.
 
 ```{r}
-fixed <- FALSE #🟢
+fixed <- TRUE #🟢
 filters <- c(0.05,0.15,0.3) #🟢
 iterations <- 10 #🟢
 
@@ -159,13 +167,30 @@ for (var in VARIABLES) {
 We can visualize similarity in spectra using the resulting MDS coordinates:
 
 ```{r}
-selectVars <- c('region', 'class') #🟢
+selectVars <- c('temperature', 'species', 'source') #🟢
+
+#plot aesthetics
 point_size <- 2 #🟢
 transparency <- 0.7 #🟢
+axisTitleFontSize <- 10
+axisTitleMargin <- 10
+axisLabelFontSize <- 8
+plotBorders = TRUE
+theme <- 'dark'
+backgroundSet <- TRUE
+savePlot <- TRUE
 
+P2 <- plotSpectralGroups(mds_coords, variables=selectVars, 
+                   s=point_size, a=transparency, 
+                   axisTitleFont=axisTitleFontSize,
+                   axisTitleMar=axisTitleMargin,
+                   axisLabelFont = axisLabelFontSize,
+                   show_legend = TRUE,
+                   plot_borders = plotBorders,
+                   selectTheme = theme,
+                   backgroundSet = backgroundSet,
+                   savePlot = savePlot)
 
-plotSpectralGroups(mds_coords, variables=selectVars, 
-                   s=point_size, a=transparency, show_legend = TRUE)
 
 ```
 
@@ -180,8 +205,8 @@ groups <- getGroups(mds_coords, selectVars)
 The code below conducts a permutation test, where distances between randomly selected pairs of spectra across the selected groups are compared with distances between randomly selected pairs of spectra regardless of group. The p-value shown can be interpreted as an estimate for the likelihood that the distances between spectra of the different selected groups are not larger than the distances between random pairs of spectra.
 
 ```{r}
-n1 <- 3 #🟢
-n2 <- 8 #🟢
+n1 <- 5 #🟢
+n2 <- 5 #🟢
 alpha = 0.05 #🟢
 
 

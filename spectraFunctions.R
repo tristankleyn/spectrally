@@ -238,12 +238,20 @@ getDistMat <- function(data, fixed=TRUE, filters=c(), iters=10) {
 }
 
 
-plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_legend = TRUE) {
+plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_legend = TRUE, selectTheme='light',
+                               plot_borders = TRUE, axisTitleFont = 10, axisTitleMar = 10, axisLabelFont = 8, 
+                               savePlot=FALSE, backgroundSet=TRUE) {
+  
+  themes <- list('dark'=c('grey40', 'grey90'),
+                 'light'=c('#d4e3e5', '#e6f0f1'))
+  
+  theme <- themes[[selectTheme]]
+  
   if (length(variables) > 0) {
     var1 <- variables[1]
     n_levels <- nlevels(as.factor(mdsData[[var1]]))
     if (n_levels == 2) {
-      colList <- c('skyblue2', 'salmon2')
+      colList <- c('#86a9c4', 'salmon2')
     } else if (n_levels <= 8) {
       dark2_palette <- brewer.pal(8, "Dark2")
       colList <- sample(dark2_palette, size = n_levels, replace = FALSE)
@@ -276,8 +284,12 @@ plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_le
       geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
       facet_grid(cols = vars(.data[[var2]])) +
       theme(
-        panel.border = element_rect(color = "grey40", fill = NA),
-        strip.background = element_rect(fill = "grey90", color = "grey40"),
+        axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
+        axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
+        axis.text.y = element_text(size = axisLabelFont),
+        panel.border = element_rect(color = theme[1], fill = NA),
+        strip.background = element_rect(fill = theme[2], color = theme[1]),
         strip.text = element_text(face = "bold")
       ) +
       scale_color_manual(values = colList)
@@ -290,8 +302,12 @@ plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_le
       geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
       facet_grid(cols = vars(.data[[var2]]), rows = vars(.data[[var3]])) +
       theme(
-        panel.border = element_rect(color = "grey40", fill = NA),
-        strip.background = element_rect(fill = "grey90", color = "grey40"),
+        axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
+        axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
+        axis.text.y = element_text(size = axisLabelFont),
+        panel.border = element_rect(color = theme[1], fill = NA),
+        strip.background = element_rect(fill = theme[2], color = theme[1]),
         strip.text = element_text(face = "bold")
       ) +
       scale_color_manual(values = colList)
@@ -300,6 +316,43 @@ plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_le
   if (!show_legend) {
     p <- p + theme(legend.position = "none")
   }
+  
+  if (plot_borders) {
+    p <- p + theme(
+      panel.border = element_rect(color = theme[1], fill = NA, linewidth = 0.5) # Add light grey border
+    )
+  } else {
+    p <- p + theme(
+      panel.border = element_blank() # Remove panel border
+    )
+  }
+  
+  if (backgroundSet) {
+    p <- p +
+      theme(
+        panel.background = element_rect(fill = "white", colour = NA), # White background for the plotting area
+        plot.background = element_rect(fill = "white", colour = NA)   # White background for the entire plot region
+      )
+  }
+
+  if (savePlot) {
+    current_date <- Sys.Date()
+    current_datetime <- Sys.time()
+    
+    date_suffix <- format(current_date, "%d%m")
+    datetime_string <- format(current_datetime, "%d%m-%H%M")
+    folder_name <- paste0("figures", date_suffix)
+    
+    if (!dir.exists(folder_name)) {
+      dir.create(folder_name)
+    } else {
+    }
+    
+    path <- sprintf('%s/P1-%s.png', folder_name, datetime_string)
+    ggsave(path, plot = p, width = 7, height = 5, dpi = 400)
+  }
+  
+  suppressWarnings(print(p))
   
   return(p)
 }
@@ -397,11 +450,17 @@ permTestGroups <- function(data, n1, n2, selectVars=c(), a=0.05, nTests=100) {
   return(list(nullDist=dists, xTest=dist12, pval=p, g1=G1, g2=G2))
 }
 
-overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=NULL, 
+overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=NULL, selectTheme='dark',
                            xScale=NULL, xLims=NULL, XYlabs=c('Index', 'Spectrum value'),
                            gridLines='both', plot_borders=TRUE, y_breaks=4,
                            axisTitleFont=12, axisTitleMar=10, 
-                           axisLabelFont=10, groupLabelFont=12) {
+                           axisLabelFont=10, groupLabelFont=12,
+                           backgroundSet=TRUE, savePlot=FALSE) {
+  
+  themes <- list('dark'=c('grey40', 'grey90', 'grey92'),
+                 'light'=c('#d4e3e5', '#e6f0f1', "grey92"))
+  
+  theme <- themes[[selectTheme]]
   
   ind1 <- which(names(data)=='1')
   
@@ -443,7 +502,7 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
   if (length(variables) > 0) {
     n_levels <- nlevels(as.factor(data[[var1]]))
     if (n_levels == 2) {
-      colList <- c('skyblue2', 'salmon2')
+      colList <- c('#86a9c4', 'salmon2')
     } else if (n_levels <= 8) {
       dark2_palette <- brewer.pal(8, "Dark2")
       colList <- sample(dark2_palette, size = n_levels, replace = FALSE)
@@ -472,8 +531,9 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
         axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
         axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
         axis.text.y = element_text(size = axisLabelFont),
+        strip.text = element_text(size = groupLabelFont, face='bold'),
         strip.text.y = element_text(angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "gray90", color = "white"),
+        strip.background = element_rect(fill = theme[2], color = theme[1]),
         panel.spacing = unit(1, "lines"),
         legend.position = "none" # Added legend position
       ) + 
@@ -496,9 +556,9 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
         axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
         axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
         axis.text.y = element_text(size = axisLabelFont),
-        strip.text = element_text(size = groupLabelFont),
+        strip.text = element_text(size = groupLabelFont, face='bold'),
         strip.text.y = element_text(angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "gray90", color = "white"),
+        strip.background = element_rect(fill = theme[2], color = theme[1]),
         panel.spacing = unit(1, "lines"),
         legend.position = "none" # Added legend position
       ) + 
@@ -507,7 +567,7 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
         breaks = scales::breaks_pretty(n = y_breaks)
       )
   } else {
-    p <- ggplot(data, aes(x = x, y = y, group = as.factor(id), color = .data[[var1]])) + # Added 'group = id' and color
+    p <- ggplot(data, aes(x = x, y = y, group = as.factor(id), color = .data[[var2]])) + # Added 'group = id' and color
       geom_line() +
       facet_grid(cols = vars(.data[[var1]]), rows = vars(.data[[var2]])) + 
       labs(
@@ -521,10 +581,9 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
         axis.title.y = element_text(size = axisTitleFont, margin = margin(r = axisTitleMar, unit = "pt")),
         axis.text.x = element_text(angle = 45, hjust = 1, size = axisLabelFont),
         axis.text.y = element_text(size = axisLabelFont),
-        strip.text = element_text(size = groupLabelFont),
+        strip.text = element_text(size = groupLabelFont, face='bold'),
         strip.text.y = element_text(angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "#e6f0f1", color = "#d4e3e5"),
-        strip.text.margin = margin(t = 5, r = 5, b = 5, l = 5, unit = "pt"),
+        strip.background = element_rect(fill = theme[2], color = theme[1]),
         panel.spacing = unit(1, "lines"),
         legend.position = "none" # Added legend position
       ) +
@@ -543,23 +602,23 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
     if (gridLines == 'h') {
       p <- p + theme(
         panel.grid.major.x = element_blank(), # Remove vertical major gridlines
-        panel.grid.major.y = element_line(color = "grey92"), # Keep horizontal major gridlines
+        panel.grid.major.y = element_line(color = theme[3]), # Keep horizontal major gridlines
         panel.grid.minor.x = element_blank(), # Remove vertical minor gridlines
-        panel.grid.minor.y = element_line(color = "grey92", linewidth = 0.25) # Add horizontal minor gridlines
+        panel.grid.minor.y = element_line(color = theme[3], linewidth = 0.25) # Add horizontal minor gridlines
       )
     } else if (gridLines == 'v') {
       p <- p + theme(
-        panel.grid.major.x = element_line(color = "grey92"), # Keep vertical major gridlines
+        panel.grid.major.x = element_line(color = theme[3]), # Keep vertical major gridlines
         panel.grid.major.y = element_blank(), # Remove horizontal major gridlines
-        panel.grid.minor.x = element_line(color = "grey92", linewidth = 0.25), # Add vertical minor gridlines
+        panel.grid.minor.x = element_line(color = theme[3], linewidth = 0.25), # Add vertical minor gridlines
         panel.grid.minor.y = element_blank() # Remove horizontal minor gridlines
       )
     } else if (gridLines == 'both') {
       p <- p + theme(
-        panel.grid.major.x = element_line(color = "grey92"), # Keep vertical major gridlines
-        panel.grid.major.y = element_line(color = "grey92"), # Keep horizontal major gridlines
-        panel.grid.minor.x = element_line(color = "grey92", linewidth = 0.25), # Add vertical minor gridlines
-        panel.grid.minor.y = element_line(color = "grey92", linewidth = 0.25) # Add horizontal minor gridlines
+        panel.grid.major.x = element_line(color = theme[3]), # Keep vertical major gridlines
+        panel.grid.major.y = element_line(color = theme[3]), # Keep horizontal major gridlines
+        panel.grid.minor.x = element_line(color = theme[3], linewidth = 0.25), # Add vertical minor gridlines
+        panel.grid.minor.y = element_line(color = theme[3], linewidth = 0.25) # Add horizontal minor gridlines
       )
     }
   } else { # If gridLines is NULL, remove all gridlines
@@ -571,7 +630,7 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
   
   if (plot_borders) {
     p <- p + theme(
-      panel.border = element_rect(color = "#d4e3e5", fill = NA, linewidth = 0.5) # Add light grey border
+      panel.border = element_rect(color = theme[1], fill = NA, linewidth = 0.5) # Add light grey border
     )
   } else {
     p <- p + theme(
@@ -579,7 +638,34 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
     )
   }
   
+  if (backgroundSet) {
+    p <- p +
+      theme(
+        panel.background = element_rect(fill = "white", colour = NA), # White background for the plotting area
+        plot.background = element_rect(fill = "white", colour = NA)   # White background for the entire plot region
+      )
+  }
+  
+  if (savePlot) {
+    current_date <- Sys.Date()
+    current_datetime <- Sys.time()
+    
+    date_suffix <- format(current_date, "%d%m")
+    datetime_string <- format(current_datetime, "%d%m-%H%M")
+    folder_name <- paste0("figures", date_suffix)
+    
+    if (!dir.exists(folder_name)) {
+      dir.create(folder_name)
+    } else {
+    }
+    
+    path <- sprintf('%s/P2-%s.png', folder_name, datetime_string)
+    ggsave(path, plot = p, width = 7, height = 5, dpi = 400)
+  }
+  
+  
   suppressWarnings(print(p))
+  return(p)
 }
 
 compressData <- function(data, k=1, sumNorm=TRUE) {
