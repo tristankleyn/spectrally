@@ -67,7 +67,7 @@ Two cells for plotting your data in different ways are available in the next par
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/3bb65b74-0117-432d-8681-57ed48492998" />
 </p>
 
-A second plotting cell allows for direct spectral comparison between two indiviudal samples, while the code cells after this second plot demonstrate how spectral distance can calculated by averaging distance between spectra using varying window sizes.
+A second plotting cell allows for direct spectral comparison between two indiviudal samples. The spectralDist() function plots two individual spectra and estimates the spectral distance between them. This is done by defining a set of k-values (which by default are 1, 2, 4, and 8), which represent different window sizes for smoothing the spectra with a moving average, before summing the absolute differences between each corresponding value across the two spectra. I.e. a k-value of 1 means no smoothing - absolute differences between each original corresponding spectral values are summed to give a distance score, while a k-value of 2 requires that instead, absolute differences are measured between the means of each pair of 2 succesive values. Averaging distance scores across different k-values allows for the overall distance metric to  capture both local and global similarities between spectra.
 
 <p align="left">
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/2418a344-67e0-4141-9c78-7c22c555651b" />
