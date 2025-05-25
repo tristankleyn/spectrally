@@ -668,26 +668,26 @@ overlaySpectra <- function(data, variables=c(), subsetVar=NULL, subsetVarLevel=N
   return(p)
 }
 
+compress <- function(x, k=1, sumNorm=TRUE) {
+  new <- c()
+  if (k > 1) {
+    for (i in 1:length(x)) {
+      if ((i-1)%%k == 0) {
+        new <- append(new, mean(x[i:(i+k-1)], na.rm=TRUE))
+      }
+    }
+  } else {
+    new <- x
+  }
+  
+  if (sumNorm==TRUE) {
+    new <- new/sum(new)
+  }
+  return(new)
+}
+
 compressData <- function(data, k=1, sumNorm=TRUE) {
   if (k > 1) {
-    compress <- function(x, k=1, sumNorm=TRUE) {
-      new <- c()
-      if (k > 1) {
-        for (i in 1:length(x)) {
-          if ((i-1)%%k == 0) {
-            new <- append(new, mean(x[i:(i+k-1)], na.rm=TRUE))
-          }
-        }
-      } else {
-        new <- x
-      }
-      
-      if (sumNorm==TRUE) {
-        new <- new/sum(new)
-      }
-      return(new)
-    }
-    
     ind1 <- which(names(data)=='1')
     data_comp <- data.frame()
     for (i in 1:nrow(data)) {

@@ -68,9 +68,9 @@ tData <- info[[1]]
 If your data contains many samples, you may consider reudcing the size of your dataset to improve the efficiency of this analysis. Use the code below to downsample or compress your data. Downsampling involves sub-sampling your data randomly to reduce the number of samples to a fraction of the original dataset defined by **downsample_factor**, while compressing involves reducing the length of your spectra by taking a moving average of each, where **compress_factor** determines the number of values averaged in each non-overlapping step.
 
 ```{r}
-downsample_factor <- 0.01 #🟢
-compress_factor <- 1 #🟢
-vars <- c('species', 'enc_id') #🟢
+downsample_factor <- 1 #🟢
+compress_factor <- 2 #🟢
+vars <- c() #🟢
 
 tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% compressData(k=compress_factor)
 ```
@@ -102,7 +102,8 @@ savePlot <- FALSE
 
 P1 <- overlaySpectra(data=tData, variables=selectVars, subsetVar=subsetVar,
                subsetVarLevel=subsetVarLevel, 
-               xScale = xScale, xLims = xLims,XYlabs = XYlabs,
+               xScale = xScale, xLims = xLims, 
+               XYlabs = XYlabs,
                gridLines = 'h', 
                plot_borders = plotBorders,
                y_breaks = yBreaks,
@@ -167,7 +168,7 @@ for (var in VARIABLES) {
 We can visualize similarity in spectra using the resulting MDS coordinates:
 
 ```{r}
-selectVars <- c('species') #🟢
+selectVars <- c() #🟢
 
 #plot aesthetics
 point_size <- 2 #🟢
