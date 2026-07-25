@@ -55,7 +55,7 @@ showExampleTable()
 Run the code below to read in your **spectra.csv** data and check that it is in the correct format.
 
 ```{r}
-tData <- read.csv('formattedData/spectra.csv', fill=TRUE)
+tData <- read.csv('formattedData/spectraKW2.csv', fill=TRUE)
 info <- checkData(tData)
 tData <- info[[1]]
 
@@ -68,8 +68,8 @@ tData <- info[[1]]
 If your data contains many samples, you may consider reudcing the size of your dataset to improve the efficiency of this analysis. Use the code below to downsample or compress your data. Downsampling involves sub-sampling your data randomly to reduce the number of samples to a fraction of the original dataset defined by **downsample_factor**, while compressing involves reducing the length of your spectra by taking a moving average of each, where **compress_factor** determines the number of values averaged in each non-overlapping step.
 
 ```{r}
-downsample_factor <- 1 #🟢
-compress_factor <- 2 #🟢
+downsample_factor <- 0.333 #🟢
+compress_factor <- 1 #🟢
 vars <- c() #🟢
 
 tData <- downsampleData(tData, fraction=downsample_factor, variables=vars) %>% compressData(k=compress_factor)
@@ -82,11 +82,11 @@ Use the code below to visualize your spectra by variable groupings of your choos
 ```{r}
 subsetVar <- NULL #🟢
 subsetVarLevel <- 1 #🟢
-selectVars <- c('species') #🟢
+selectVars <- c('group') #🟢
 
 xScale <- NULL #🟢
 xLims <- NULL #🟢
-XYlabs <- c('Retention time (min)', 'Relative abundance') #🟢
+XYlabs <- c('Frequency bin', 'Relative amplitude') #🟢
 
 #customise asthetics
 gridLines <- 'h'
@@ -124,7 +124,7 @@ Once you've correctly uploaded your data, we can now begin to analyse spectra. T
 ```{r}
 n1 <- sample(1:nrow(tData), 1) #🟢
 n2 <- sample(1:nrow(tData), 1) #🟢                 
-label_var <- 'species' #🟢                 
+label_var <- 'class' #🟢                 
 
 scores <- spectralDist(data=tData, n1=n1, n2=n2, labelVar=label_var, plotSpectra=TRUE, verbose=FALSE)
 
@@ -168,7 +168,7 @@ for (var in VARIABLES) {
 We can visualize similarity in spectra using the resulting MDS coordinates:
 
 ```{r}
-selectVars <- c() #🟢
+selectVars <- c('species', 'group') #🟢
 
 #plot aesthetics
 point_size <- 2 #🟢
