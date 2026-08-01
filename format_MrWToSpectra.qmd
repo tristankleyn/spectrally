@@ -1,0 +1,44 @@
+---
+title: "formatGCMSSpectralData"
+format: html
+editor: visual
+---
+
+## Convert Mr. Whiff output into a standardized table format.
+
+Load helper functions from functions script.
+
+```{r}
+source('format_MrWToSpectra_functions.R')
+```
+
+Read in data, provide necessary info:
+
+-   **folder** \~ name of folder containing raw data.
+
+-   **skipHead** \~ number of rows to remove from start of each trial
+
+-   **skipTail** \~ number of rows to remove from end of each trial
+
+-   **norm_method** \~ normalize values by dividing by sum ('sum') or subtracting minimum and dividing by range ('minmax') - leave as NULL for no normalization
+
+```{r}
+folder <- 'rawData/mr_whiff'
+skipHead <- 5
+skipTail <- 0
+normMethod <- 'minmax'
+
+dataSpec <- formatIntoSpec(dir_path=folder, 
+                           skip_head=skipHead,
+                           skip_tail=skipTail,
+                           norm_method=normMethod)
+
+```
+
+Export formatted data to .CSV format.
+
+```{r}
+exportToCSV_dt(dataSpec)
+```
+
+**All done!**

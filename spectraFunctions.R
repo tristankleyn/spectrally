@@ -3,6 +3,7 @@ library(DT)
 library(RColorBrewer)
 library(tidyr)
 library(scales)
+library(MASS)
 
 
 printInfo <- function(data, infoType='dims') {
@@ -210,37 +211,83 @@ spectralDist <- function(data, n1, n2, rt1=55, rtMax=30, labelVar=NULL, kvals=c(
   return(scores)
 }
 
-getDistMat <- function(data, fixed=TRUE, filters=c(), iters=10) {
+getDistMat <- function(data, fixed = TRUE, filters = c(), iters = 10,
+                       landmark = FALSE, nLandmarks = 150,
+                       landmarkIdx = NULL, seed = NULL) {
+  
   num_rows <- nrow(data)
   
-  # Initialize an empty distance matrix
-  distance_matrix <- matrix(0, nrow = num_rows, ncol = num_rows)
-  pb <- txtProgressBar(min = 1, max = num_rows - 1, style = 3)
-  
-  # Iterate through the upper triangle of the matrix (excluding the diagonal)
-  for (i in 1:(num_rows - 1)) {
-    setTxtProgressBar(pb, i)
-    for (j in (i + 1):num_rows) {
-      # Calculate the spectral distance between row i and row j
-      scores <- spectralDist(data = data, n1 = i, n2 = j, kvals = c(1, 2, 4, 8, 16, 32), plotSpectra = FALSE, fixed=fixed, filters=filters, iters=iters, verbose=FALSE)
-      distance <- mean(scores$difference)
-      
-      # Fill in the upper triangle
-      distance_matrix[i, j] <- distance
-      
-      # Reflect the value to the lower triangle
-      distance_matrix[j, i] <- distance
+  if (!landmark) {
+    # ---- ORIGINAL FULL PAIRWISE METHOD (unchanged) ----
+    distance_matrix <- matrix(0, nrow = num_rows, ncol = num_rows)
+    pb <- txtProgressBar(min = 1, max = num_rows - 1, style = 3)
+    
+    for (i in 1:(num_rows - 1)) {
+      setTxtProgressBar(pb, i)
+      for (j in (i + 1):num_rows) {
+        scores <- spectralDist(data = data, n1 = i, n2 = j, kvals = c(1, 2, 4, 8, 16, 32),
+                               plotSpectra = FALSE, fixed = fixed, filters = filters,
+                               iters = iters, verbose = FALSE)
+        distance <- mean(scores$difference)
+        distance_matrix[i, j] <- distance
+        distance_matrix[j, i] <- distance
+      }
     }
+    close(pb)
+    return(list(type = "full", DM = distance_matrix))
+    
+  } else {
+    # ---- LANDMARK METHOD ----
+    if (!is.null(seed)) set.seed(seed)
+    if (is.null(landmarkIdx)) {
+      landmarkIdx <- sample(1:num_rows, size = min(nLandmarks, num_rows), replace = FALSE)
+    }
+    nl <- length(landmarkIdx)
+    
+    # 1. Landmark x landmark distances (small full matrix)
+    Dl <- matrix(0, nl, nl)
+    pb1 <- txtProgressBar(min = 1, max = nl - 1, style = 3)
+    for (i in 1:(nl - 1)) {
+      setTxtProgressBar(pb1, i)
+      for (j in (i + 1):nl) {
+        scores <- spectralDist(data = data, n1 = landmarkIdx[i], n2 = landmarkIdx[j],
+                               kvals = c(1, 2, 4, 8, 16, 32), plotSpectra = FALSE,
+                               fixed = fixed, filters = filters, iters = iters, verbose = FALSE)
+        d <- mean(scores$difference)
+        Dl[i, j] <- d; Dl[j, i] <- d
+      }
+    }
+    close(pb1)
+    
+    # 2. Distances from every non-landmark point to each landmark
+    Dall <- matrix(0, nrow = num_rows, ncol = nl)
+    Dall[landmarkIdx, ] <- Dl   # landmark rows already known — no need to recompute
+    
+    nonLandmarkIdx <- setdiff(1:num_rows, landmarkIdx)
+    pb2 <- txtProgressBar(min = 1, max = length(nonLandmarkIdx), style = 3)
+    for (idx in seq_along(nonLandmarkIdx)) {
+      i <- nonLandmarkIdx[idx]
+      setTxtProgressBar(pb2, idx)
+      for (j in 1:nl) {
+        li <- landmarkIdx[j]
+        scores <- spectralDist(data = data, n1 = i, n2 = li, kvals = c(1, 2, 4, 8, 16, 32),
+                               plotSpectra = FALSE, fixed = fixed, filters = filters,
+                               iters = iters, verbose = FALSE)
+        Dall[i, j] <- mean(scores$difference)
+      }
+    }
+    close(pb2)
+    
+    return(list(type = "landmark", Dl = Dl, Dall = Dall, landmarkIdx = landmarkIdx))
   }
-  
-  close(pb)
-  return(distance_matrix)
 }
 
 
 plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_legend = TRUE, selectTheme='light',
                                plot_borders = TRUE, axisTitleFont = 10, axisTitleMar = 10, axisLabelFont = 8, 
-                               savePlot=FALSE, backgroundSet=TRUE) {
+                               savePlot=FALSE, backgroundSet=TRUE,
+                               show_points = TRUE, show_ellipse = FALSE,
+                               ellipseLevel = 0.90, ellipseType = "t") {
   
   themes <- list('dark'=c('grey40', 'grey90'),
                  'light'=c('#d4e3e5', '#e6f0f1'))
@@ -267,21 +314,40 @@ plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_le
     theme_minimal()
   
   if (length(variables) == 0) {
-    p <- base_plot +
-      geom_point(data = mdsData, aes(x = MDS1, y = MDS2), size = s, alpha = a)
+    p <- base_plot
+    if (show_points) {
+      p <- p + geom_point(data = mdsData, aes(x = MDS1, y = MDS2), size = s, alpha = a)
+    }
+    if (show_ellipse) {
+      p <- p + stat_ellipse(data = mdsData, aes(x = MDS1, y = MDS2),
+                            level = ellipseLevel, type = ellipseType)
+    }
   } else if (length(variables) == 1) {
     var1 <- variables[1]
     n_levels <- nlevels(as.factor(mdsData[[var1]]))
     mdsData <- mdsData[!is.na(mdsData[[var1]]), ]
-    p <- base_plot +
-      geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
-      scale_color_manual(values = colList)
+    p <- base_plot
+    if (show_points) {
+      p <- p + geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a)
+    }
+    if (show_ellipse) {
+      p <- p + stat_ellipse(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]], group = .data[[var1]]),
+                            level = ellipseLevel, type = ellipseType)
+    }
+    p <- p + scale_color_manual(values = colList)
   } else if (length(variables) == 2) {
     var1 <- variables[1]
     var2 <- variables[2]
     mdsData <- mdsData[(!is.na(mdsData[[var1]]) & !is.na(mdsData[[var2]])), ]
-    p <- base_plot +
-      geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
+    p <- base_plot
+    if (show_points) {
+      p <- p + geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a)
+    }
+    if (show_ellipse) {
+      p <- p + stat_ellipse(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]], group = .data[[var1]]),
+                            level = ellipseLevel, type = ellipseType)
+    }
+    p <- p +
       facet_grid(cols = vars(.data[[var2]])) +
       theme(
         axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
@@ -298,8 +364,15 @@ plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_le
     var2 <- variables[2]
     var3 <- variables[3]
     mdsData <- mdsData[(!is.na(mdsData[[var1]]) & !is.na(mdsData[[var2]]) & !is.na(mdsData[[var3]])), ]
-    p <- base_plot +
-      geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a) +
+    p <- base_plot
+    if (show_points) {
+      p <- p + geom_point(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]]), size = s, alpha = a)
+    }
+    if (show_ellipse) {
+      p <- p + stat_ellipse(data = mdsData, aes(x = MDS1, y = MDS2, color = .data[[var1]], group = .data[[var1]]),
+                            level = ellipseLevel, type = ellipseType)
+    }
+    p <- p +
       facet_grid(cols = vars(.data[[var2]]), rows = vars(.data[[var3]])) +
       theme(
         axis.title.x = element_text(size = axisTitleFont, margin = margin(t = axisTitleMar, unit = "pt")),
@@ -319,52 +392,48 @@ plotSpectralGroups <- function(mdsData, variables = c(), s = 2, a = 0.7, show_le
   
   if (plot_borders) {
     p <- p + theme(
-      panel.border = element_rect(color = theme[1], fill = NA, linewidth = 0.5) # Add light grey border
+      panel.border = element_rect(color = theme[1], fill = NA, linewidth = 0.5)
     )
   } else {
     p <- p + theme(
-      panel.border = element_blank() # Remove panel border
+      panel.border = element_blank()
     )
   }
   
   if (backgroundSet) {
     p <- p +
       theme(
-        panel.background = element_rect(fill = "white", colour = NA), # White background for the plotting area
-        plot.background = element_rect(fill = "white", colour = NA)   # White background for the entire plot region
+        panel.background = element_rect(fill = "white", colour = NA),
+        plot.background = element_rect(fill = "white", colour = NA)
       )
   }
-
+  
   if (savePlot) {
     current_date <- Sys.Date()
     current_datetime <- Sys.time()
-    
     date_suffix <- format(current_date, "%d%m")
     datetime_string <- format(current_datetime, "%d%m-%H%M")
     folder_name <- paste0("figures", date_suffix)
-    
-    if (!dir.exists(folder_name)) {
-      dir.create(folder_name)
-    } else {
-    }
-    
+    if (!dir.exists(folder_name)) dir.create(folder_name)
     path <- sprintf('%s/P1-%s.png', folder_name, datetime_string)
     ggsave(path, plot = p, width = 7, height = 5, dpi = 400)
   }
   
   suppressWarnings(print(p))
-  
   return(p)
 }
 
 getGroups <- function(data, vars) {
+  if (length(vars) < 2) {
+    vars <- c(vars)
+  }
   # Remove rows with NA in any of the selected variables
   data_filtered <- data %>%
     filter(if_all(all_of(vars), ~ !is.na(.)))
   
   # Count occurrences of each combination
   combinations_with_counts <- data_filtered %>%
-    count(across(all_of(vars)), name = "count") %>%
+    dplyr::count(across(all_of(vars)), name = "count") %>%
     mutate(id = row_number()) %>%
     relocate(id)
   
@@ -781,6 +850,24 @@ downsampleData <- function(data, fraction = 1.0, variables = c()) {
     
     cat(sprintf('\nDownsampled data from \033[1m%s\033[0m to \033[1m%s\033[0m samples', original, nrow(data)))
   }
+  return(data)
+}
+
+filterData <- function(data, filter_variable, filter_type, filter_specification) {
+  original <- nrow(data)
+  for (i in 1:length(filter_variable)) {
+    fVar <- filter_variable[i][[1]]
+    fType <- filter_type[i][[1]]
+    fSpec <- filter_specification[i][[1]]
+  }
+  
+  if (fType == 'range') {
+    data <- subset(data, data[[fVar]] >= fSpec[1] & data[[fVar]] < fSpec[2])
+  } else if (fType == 'group') {
+    data <- subset(data, data[[fVar]] %in% fSpec)
+  }
+
+  cat(sprintf("Filtered out %s rows of data, %s rows remain.", original - nrow(data), nrow(data)))
   return(data)
 }
 
